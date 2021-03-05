@@ -1,11 +1,13 @@
 from __future__ import print_function
 
+from typing import *
 from builtins import range
 from builtins import object
 import numpy as np
+from numpy import ndarray
 from cs231n.classifiers.linear_svm import *
 from cs231n.classifiers.softmax import *
-
+from tqdm import tqdm
 
 
 class LinearClassifier(object):
@@ -40,9 +42,9 @@ class LinearClassifier(object):
 
         # Run stochastic gradient descent to optimize W
         loss_history = []
-        for it in range(num_iters):
-            X_batch = None
-            y_batch = None
+        indices = np.arange(len(y))
+        for it in tqdm(range(num_iters)):
+            np.random.shuffle(indices)
 
             #########################################################################
             # TODO:                                                                 #
@@ -56,13 +58,19 @@ class LinearClassifier(object):
             # replacement is faster than sampling without replacement.              #
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-            pass
+            for i in range(0, len(y), batch_size):
+                indices_batch = indices[i:i+batch_size]
+                X_batch = X[indices_batch]
+                y_batch = y[indices_batch]
+            
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
             # evaluate loss and gradient
-            loss, grad = self.loss(X_batch, y_batch, reg)
+                loss, grad = self.loss(X_batch, y_batch, reg)
+                self.W -= learning_rate * grad
+                # break
+            
             loss_history.append(loss)
 
             # perform parameter update
@@ -72,7 +80,6 @@ class LinearClassifier(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -102,12 +109,12 @@ class LinearClassifier(object):
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        y_pred = np.argmax(X @ self.W, axis=1)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return y_pred
 
-    def loss(self, X_batch, y_batch, reg):
+    def loss(self, X_batch, y_batch, reg) -> Tuple[float, ndarray]:
         """
         Compute the loss function and its derivative.
         Subclasses will override this.
